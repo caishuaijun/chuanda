@@ -11,29 +11,46 @@
 - [item.js](file://frontend/src/api/item.js)
 - [ItemManager.vue](file://frontend/src/components/ItemManager.vue)
 - [README.deploy.md](file://README.deploy.md)
+- [.gitignore](file://backend/.gitignore)
+- [.gitignore](file://frontend/.gitignore)
 </cite>
+
+## 更新摘要
+**变更内容**
+- 新增Git版本控制基础设施章节，详细说明.gitignore配置和标准化的部署流程
+- 更新项目结构图，反映版本控制文件的存在
+- 增加版本控制最佳实践和代码管理建议
+- 完善部署流程说明，强调版本控制在CI/CD中的作用
 
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)
-3. [核心组件](#核心组件)
-4. [架构概览](#架构概览)
-5. [详细组件分析](#详细组件分析)
-6. [依赖关系分析](#依赖关系分析)
-7. [性能考虑](#性能考虑)
-8. [故障排除指南](#故障排除指南)
-9. [结论](#结论)
+3. [版本控制基础设施](#版本控制基础设施)
+4. [核心组件](#核心组件)
+5. [架构概览](#架构概览)
+6. [详细组件分析](#详细组件分析)
+7. [依赖关系分析](#依赖关系分析)
+8. [性能考虑](#性能考虑)
+9. [故障排除指南](#故障排除指南)
+10. [结论](#结论)
 
 ## 简介
 
 本文档提供了基于现有Spring Boot + Vue.js项目的完整Docker容器化部署方案。该应用是一个简单的CRUD演示程序，包含MySQL数据库、Spring Boot后端服务和Vue.js前端界面。文档详细说明了多阶段Docker构建、docker-compose编排、Nginx反向代理配置以及最佳实践。
 
+**更新** 项目现已建立完整的Git版本控制基础设施，包括标准化的.gitignore配置和规范化的部署流程，为后续的容器化部署提供了可靠的版本管理基础。
+
 ## 项目结构
 
-该项目采用前后端分离的架构设计，具有清晰的模块化组织：
+该项目采用前后端分离的架构设计，具有清晰的模块化组织，并配备了完整的版本控制系统：
 
 ```mermaid
 graph TB
+subgraph "版本控制基础设施"
+VC[.gitignore]
+VC --> BackendIgnore[backend/.gitignore]
+VC --> FrontendIgnore[frontend/.gitignore]
+end
 subgraph "后端服务 (Spring Boot)"
 BE[backend/]
 BE --> SRC[src/main/]
@@ -45,6 +62,7 @@ JAVA --> SERVICE[service/]
 SRC --> RES[resources/]
 RES --> APP[application.yml]
 BE --> POM[pom.xml]
+BE --> GITIGNORE[.gitignore]
 end
 subgraph "前端服务 (Vue.js)"
 FE[frontend/]
@@ -53,6 +71,7 @@ SRC --> API[api/]
 SRC --> COMPONENTS[components/]
 FE --> PKG[package.json]
 FE --> VITE[vite.config.js]
+FE --> GITIGNORE[.gitignore]
 end
 subgraph "部署配置"
 DOC[README.deploy.md]
@@ -65,11 +84,59 @@ FE -.-> BE
 - [pom.xml:1-71](file://backend/pom.xml#L1-L71)
 - [application.yml:1-18](file://backend/src/main/resources/application.yml#L1-L18)
 - [package.json:1-21](file://frontend/package.json#L1-L21)
+- [.gitignore:1-44](file://backend/.gitignore#L1-44)
+- [.gitignore:1-43](file://frontend/.gitignore#L1-43)
 
 **章节来源**
 - [pom.xml:1-71](file://backend/pom.xml#L1-L71)
 - [application.yml:1-18](file://backend/src/main/resources/application.yml#L1-L18)
 - [package.json:1-21](file://frontend/package.json#L1-L21)
+- [.gitignore:1-44](file://backend/.gitignore#L1-44)
+- [.gitignore:1-43](file://frontend/.gitignore#L1-43)
+
+## 版本控制基础设施
+
+### Git忽略文件配置
+
+项目建立了标准化的.gitignore配置，确保版本控制仓库的整洁性和安全性：
+
+#### 后端.gitignore配置要点
+- **Maven构建产物**：排除/target/目录，保留.mvn/wrapper/maven-wrapper.jar
+- **IDE配置文件**：排除IntelliJ IDEA、Eclipse等开发工具配置
+- **日志文件**：排除*.log和logs/目录
+- **操作系统文件**：排除.DS_Store和Thumbs.db
+- **编译文件**：排除*.class文件
+- **本地配置**：排除application-local.yml和application-dev.yml等本地配置文件
+
+#### 前端.gitignore配置要点
+- **依赖包**：排除/node_modules/目录
+- **构建输出**：排除/dist/和/dist-ssr/目录
+- **IDE配置**：排除各种IDE的配置文件
+- **日志文件**：排除npm、yarn、pnpm等包管理器的日志
+- **环境文件**：排除.env和.env.local等环境配置
+- **缓存文件**：排除/coverage/和.pnpm-store等缓存目录
+
+**章节来源**
+- [.gitignore:1-44](file://backend/.gitignore#L1-44)
+- [.gitignore:1-43](file://frontend/.gitignore#L1-43)
+
+### 版本控制最佳实践
+
+**分支管理策略**：
+- `main/master`：生产环境分支
+- `develop`：开发环境分支
+- `feature/*`：功能开发分支
+- `hotfix/*`：紧急修复分支
+
+**提交规范**：
+- 使用清晰的提交信息格式
+- 遵循Conventional Commits规范
+- 每次提交只包含相关更改
+
+**代码审查流程**：
+- Pull Request必须经过至少一次代码审查
+- 确保所有测试通过后再合并
+- 保持分支的清洁和可追溯性
 
 ## 核心组件
 
@@ -395,9 +462,15 @@ MySQL --> MySQLRuntime
 4. **快速部署**：标准化的构建和部署流程
 5. **运维简化**：统一的监控和日志管理
 
+**更新** 项目现已建立完善的Git版本控制基础设施，为容器化部署提供了可靠的基础。版本控制文件的标准化配置确保了：
+- 开发环境的整洁性，避免不必要的文件被提交
+- 配置文件的安全性，敏感信息不会泄露到版本库
+- 部署流程的规范化，便于团队协作和持续集成
+
 建议在生产环境中进一步完善：
 - 使用Docker Compose进行服务编排
 - 配置健康检查和自动重启
 - 实施CI/CD流水线
 - 部署监控和告警系统
 - 实现数据库备份和恢复策略
+- 建立完整的版本发布和回滚机制
